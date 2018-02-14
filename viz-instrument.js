@@ -419,10 +419,10 @@ var colorScheme4 = new ColorScheme('#efe6e6', '#515654',
 				  '#9b0101', '#f7a0a0',
 				  '#630000', '#edd7d7',
 				  'white');
-var colorScheme5 = new ColorScheme('#eef5db', '#b8d8d8',
-				   '#705d56', '#dce2e5',
-				   '#f7a90e', '#d7dfe0',
-				   'white');
+var colorScheme5 = new ColorScheme('#eef5db', '#f7ce99',
+				   '#f7a90e', '#ed6200',
+				   '#705d56', '#ed8500',
+				   '#c49b5f');
 
 var currentAnim = anim1;
 var currentColorScheme = colorScheme1;
