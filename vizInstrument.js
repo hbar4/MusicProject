@@ -29,6 +29,7 @@ var leftSideKeyboard = ['Q', 'W', 'E', 'R', 'T',
 var rightSideKeyboard = ['Y', 'U', 'I', 'O', 'P',
                          'H', 'J', 'K', 'L', ';',
                          'N', 'M', ',', '.', '/'];
+var oscillators = [];
 // Animation variables
 var rightSidePressed = false;
 
@@ -70,14 +71,9 @@ class PlayableChunk {
       oscs[i].amp(0);
       oscs[i].start();
       oscs[i].amp(this.velocity, this.attack);
+      oscillators.push({"osc" : oscs[i], 
+                        "endTime" : this.length/bpm * 60 * 1000 + startTime});
     }
-    while (millis() - startTime < this.length/bpm * 60 * 1000) {
-    }
-    for (var i = 0; i < this.notes.length; i++) {
-      oscs[i].amp(0, this.decay);
-      oscs[i].stop();
-    }
-    
   }
 }
 
@@ -250,23 +246,198 @@ var vars1 = {
 						}
 var anim1 = new AnimationScheme(anim1Base, anim1Intense, vars1);
 
+function anim2Base(vars, colorScheme) {
+  drawGradient(colorScheme);
+  vars['outerCircleDist'] = 
+    vars['returnToBaseRate'] * vars['baseOuterCircleDist'] + 
+    (1 - vars['returnToBaseRate']) * vars['outerCircleDist'];
+  vars['innerCircleDist'] = 
+    vars['returnToBaseRate'] * vars['baseInnerCircleDist'] +
+    (1 - vars['returnToBaseRate']) * vars['innerCircleDist'];
+  vars['outerRadius'] = 
+    vars['returnToBaseRate'] * vars['baseOuterRadius'] +
+    (1 - vars['returnToBaseRate']) * vars['outerRadius'];
+  vars['innerRadius'] = 
+    vars['returnToBaseRate'] * vars['baseInnerRadius'] +
+    (1 - vars['returnToBaseRate']) * vars['innerRadius'];
+  var outerStroke = colorScheme.primaryStroke;
+	var innerStroke = colorScheme.secondaryStroke;
+  for (var i = 0; i < vars['numCircles']; i++) {
+    var outerAngle = i * vars['angleSpace'] + 
+        		vars['outerDegree'] * Math.PI / 180;
+    var innerAngle = i * vars['angleSpace'] + 
+        		vars['innerDegree'] * Math.PI / 180;
+    
+    fill(colorScheme.primaryFill);
+    stroke(outerStroke);
+    ellipse(width / 2 + vars['outerCircleDist'] * Math.cos(outerAngle),
+      height / 2 + vars['outerCircleDist'] * Math.sin(outerAngle),
+      vars['outerRadius'], vars['outerRadius']);
+    
+    fill(colorScheme.secondaryFill);
+    stroke(innerStroke);
+    ellipse(width / 2 + vars['innerCircleDist'] * Math.cos(innerAngle),
+      height / 2 + vars['innerCircleDist'] * Math.sin(innerAngle),
+      vars['innerRadius'], vars['innerRadius']);
+  }
+	vars['outerDegree'] = (vars['outerDegree'] + vars['rotationRate']) % 360;
+  vars['innerDegree'] = (vars['innerDegree'] + vars['rotationRate']) % 360;
+}
+
+function anim2Intense(vars, colorScheme) {
+  drawGradient(colorScheme);
+  vars['outerCircleDist'] = 
+    vars['expansionRate'] * vars['expandedOuterCircleDist'] + 
+    (1 - vars['expansionRate']) * vars['outerCircleDist'];
+  vars['innerCircleDist'] = 
+    vars['expansionRate'] * vars['expandedInnerCircleDist'] +
+    (1 - vars['expansionRate']) * vars['innerCircleDist'];
+  vars['outerRadius'] = 
+    vars['expansionRate'] * vars['expandedOuterRadius'] +
+    (1 - vars['expansionRate']) * vars['outerRadius'];
+  vars['innerRadius'] = 
+    vars['expansionRate'] * vars['expandedInnerRadius'] +
+    (1 - vars['expansionRate']) * vars['innerRadius'];
+  var outerStroke = colorScheme.highlight;
+	var innerStroke = colorScheme.highlight;
+  for (var i = 0; i < vars['numCircles']; i++) {
+    var outerAngle = i * vars['angleSpace'] + 
+        		vars['outerDegree'] * Math.PI / 180;
+    var innerAngle = i * vars['angleSpace'] + 
+        		vars['innerDegree'] * Math.PI / 180;
+    fill(colorScheme.primaryFill);
+    stroke(outerStroke);
+    ellipse(width / 2 + vars['outerCircleDist'] * Math.cos(outerAngle),
+      height / 2 + vars['outerCircleDist'] * Math.sin(outerAngle),
+      vars['outerRadius'], vars['outerRadius']);
+    fill(colorScheme.secondaryFill);
+    stroke(innerStroke);
+    ellipse(width / 2 + vars['innerCircleDist'] * Math.cos(innerAngle),
+      height / 2 + vars['innerCircleDist'] * Math.sin(innerAngle),
+      vars['innerRadius'], vars['innerRadius']);
+  }
+	vars['outerDegree'] = (vars['outerDegree'] + vars['rotationRate']) % 360;
+  vars['innerDegree'] = (vars['innerDegree'] + vars['rotationRate']) % 360;
+}
+var numCircles = 8;
+var vars2 = {
+  						"rotationRate" : bpm * 0.004,
+  						"numCircles" : numCircles,
+  						"baseOuterCircleDist" : 100,
+  						"outerCircleDist" : 100,
+  						"baseOuterRadius" : 30,
+  						"outerRadius" : 30,
+  						"baseInnerCircleDist" : 50,
+  						"innerCircleDist" : 50,
+  						"baseInnerRadius" : 20,
+  						"innerRadius" : 20,
+  						"angleSpace" : 2 * Math.PI / numCircles,
+  						"outerDegree" : 0,
+  						"innerDegree" : 180/numCircles,
+  						"expandedOuterCircleDist" : 150,
+  						"expandedInnerCircleDist" : 100,
+  						"expansionRate" : 0.7,
+  						"returnToBaseRate" : 0.1,
+  						"expandedOuterRadius" : 60,
+  						"expandedInnerRadius" : 40
+						}
+
+function anim3Base(vars, colorScheme) {
+  drawGradient(colorScheme);
+  var xoff = 0;       // Option #1: 2D Noise
+  // var xoff = yoff; // Option #2: 1D Noise
+  
+  // Iterate over horizontal pixels
+  for (var x = 0; x <= width; x += 30) {
+    // Calculate a y value according to noise, map to 
+    
+    // Option #1: 2D Noise
+    var y = map(noise(xoff, vars["yoff"]), 0, 1, height/2, 2*height/3);
+
+    // Option #2: 1D Noise
+    // var y = map(noise(xoff), 0, 1, 200,300);
+    
+    // Set the vertex
+    stroke(colorScheme.primaryStroke);
+    strokeWeight(2);
+    fill(colorScheme.primaryFill);
+    ellipse(x, y, 20, 20);
+    // Increment x dimension for noise
+    xoff += 0.02;
+  }
+  // increment y dimension for noise
+  vars["yoff"] += 0.02;
+}
+
+function anim3Intense(vars, colorScheme) {
+  drawGradient(colorScheme);
+  var xoff = 0;       // Option #1: 2D Noise
+  // var xoff = yoff; // Option #2: 1D Noise
+  
+  // Iterate over horizontal pixels
+  for (var x = 0; x <= width; x += 30) {
+    // Calculate a y value according to noise, map to 
+    
+    // Option #1: 2D Noise
+    var y = map(noise(xoff, vars["yoff"]), 0, 1, 0, 4*height/5);
+
+    // Option #2: 1D Noise
+    // var y = map(noise(xoff), 0, 1, 200,300);
+    
+    // Set the vertex
+    stroke(colorScheme.highlight);
+    strokeWeight(2);
+    fill(colorScheme.primaryFill);
+    ellipse(x, y, 20, 20);
+    // Increment x dimension for noise
+    xoff += 0.05;
+  }
+  // increment y dimension for noise
+  vars["yoff"] += 0.05;
+}
+
+var vars3 = {
+							"yoff" : 0
+						};
+
+var anim1 = new AnimationScheme(anim1Base, anim1Intense, vars1);
+var anim2 = new AnimationScheme(anim2Base, anim2Intense, vars2);
+var anim3 = new AnimationScheme(anim3Base, anim3Intense, vars3);
 var colorScheme1 = new ColorScheme('#01035b', '#012b17',
                                   'black', '#b2f6ff',
                                   'black', '#00ff37',
                                   '#02ff35');
+var colorScheme2 = new ColorScheme('#c41919', '#ffb600',
+                                  '#b70e84', '#ff0f93',
+                                  '#c235ff', '#f9af1b',
+                                  '#fffb16');
+var colorScheme3 = new ColorScheme('#020e70', '#008cff',
+                                  '#6132ad', '#4600b7',
+                                  '#4600b7', '#6132ad',
+                                  '#ffffff');
 
 var currentAnim = anim1;
 var currentColorScheme = colorScheme1;
 function setup() { 
-  createCanvas(400, 400);
+  createCanvas(600, 400);
 } 
+
+function endFinishedOscillators() {
+  for (var i = 0; i < oscillators.length; i++) {
+    if (oscillators[i]["endTime"] < millis()) {
+      oscillators[i]["osc"].amp(0, 0.1);
+      oscillators[i]["osc"].stop();
+    }
+  }
+}
 
 function draw() {
   if (rightSidePressed) {
   	currentAnim.intenseAnim(currentColorScheme);
   } else {
     currentAnim.baseAnim(currentColorScheme);
-  }  
+  }
+  endFinishedOscillators();
 }
 
 function keyPressed() {
@@ -277,6 +448,24 @@ function keyPressed() {
   }
   if (rightSideKeyboard.indexOf(key) >= 0) {
     rightSidePressed = true;
+  }
+  if (key == 1) {
+    currentAnim = anim1;
+  }
+  if (key == 2) {
+    currentAnim = anim2;
+  }
+  if (key == 3) {
+    currentAnim = anim3;
+  }
+  if (key == 6) {
+    currentColorScheme = colorScheme1;
+  }
+  if (key == 7) {
+    currentColorScheme = colorScheme2;
+  }
+  if (key == 8) {
+    currentColorScheme = colorScheme3;
   }
 }
 
