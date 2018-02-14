@@ -422,7 +422,7 @@ var colorScheme4 = new ColorScheme('#efe6e6', '#515654',
 var colorScheme5 = new ColorScheme('#eef5db', '#f7ce99',
 				   '#f7a90e', '#ed6200',
 				   '#705d56', '#ed8500',
-				   'white');
+				   'red');
 
 var currentAnim = anim1;
 var currentColorScheme = colorScheme1;
