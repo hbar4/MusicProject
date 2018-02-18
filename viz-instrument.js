@@ -1,5 +1,7 @@
 // Keyboard variables
+var playing = false;
 var bpm = 60;
+var heldKeys = {};
 var base_freqs = {
   	"ab" : 25.96,
   	"a" : 27.5,
@@ -27,12 +29,12 @@ var leftSideKeyboard = ['Q', 'W', 'E', 'R', 'T',
                         'A', 'S', 'D', 'F', 'G',
                         'Z', 'X', 'C', 'V', 'B'];
 var rightSideKeyboard = ['Y', 'U', 'I', 'O', 'P',
-                         'H', 'J', 'K', 'L', ';',
-                         'N', 'M', ',', '.', '/'];
+                         'H', 'J', 'K', 'L', 'º',
+                         'N', 'M', '¼', '¾', '¿'];
 var oscillators = [];
-// Animation variables
-var rightSidePressed = false;
-
+var track = [];
+var trackIndex = 0;
+var noteStrings = [];
 
 
 
@@ -48,20 +50,14 @@ class Note {
 	constructor(note) {
   	this.freq = this.getFreq(note);
   }
-  
-  
 }
 
 class PlayableChunk {
-  constructor(notes, length, velocity = 0.5, attack = 0.05, decay = 0.05) {
+  constructor(notes) {
     this.notes = notes;
-    this.length = length;
-    this.velocity = velocity;
-    this.attack = attack;
-    this.decay = decay;
   }
   
-  play() {
+  play(playKey) {
     var startTime = millis();
     var oscs = [];
     for (var i = 0; i < this.notes.length; i++) {
@@ -70,31 +66,13 @@ class PlayableChunk {
       oscs[i].freq(this.notes[i].freq);
       oscs[i].amp(0);
       oscs[i].start();
-      oscs[i].amp(this.velocity, this.attack);
-      oscillators.push({"osc" : oscs[i], 
-                        "endTime" : this.length/bpm * 60 * 1000 + startTime});
+      oscs[i].amp(0.78, 0.1);
+      oscillators.push({"osc" : oscs[i], "key" : playKey});
     }
   }
 }
 
-class Track {
-  constructor(chunks, oscType) {
-    this.chunks = chunks;
-    this.oscType = oscType;
-  }
-}
 
-class Song {
-  constructor(tracks, bpm) {
-    this.currentTime = 0;
-    this.tracks = tracks;
-    this.bpm = bpm;
-  }
-}
-
-// function readTrackFromJSON(path, oscType) {
-  
-// }
 
 // Animation class
 class AnimationScheme {
@@ -129,52 +107,52 @@ class ColorScheme {
   }
 }
 
-var trackIndex = 0;
+// var trackIndex = 0;
 
-var track = [new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("c.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("g.5")], 0.25),
-             new PlayableChunk([new Note("g.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("c.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("e.5")], 0.25),
-             new PlayableChunk([new Note("d.5")], 0.25),
-             new PlayableChunk([new Note("c.5")], 0.25)
-            ];
+// var track = [new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("c.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("g.5")], 0.25),
+//              new PlayableChunk([new Note("g.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("c.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("e.5")], 0.25),
+//              new PlayableChunk([new Note("d.5")], 0.25),
+//              new PlayableChunk([new Note("c.5")], 0.25)
+//             ];
 
-var track2 = [new PlayableChunk([new Note("c.5"), 
-                                 new Note("e.5"),
-                                 new Note("g.5")], 0.5),
-              new PlayableChunk([new Note("c.5"), 
-                                 new Note("f.5"),
-                                 new Note("a.5")], 0.5),
-              new PlayableChunk([new Note("b.4"), 
-                                 new Note("d.5"),
-                                 new Note("g.5")], 0.5),
-              new PlayableChunk([new Note("b.4"), 
-                                 new Note("f.5"),
-                                 new Note("g.5")], 0.5),
-              new PlayableChunk([new Note("c.5"), 
-                                 new Note("e.5"),
-                                 new Note("g.5")], 0.5)
-             ];
+// var track2 = [new PlayableChunk([new Note("c.5"), 
+//                                  new Note("e.5"),
+//                                  new Note("g.5")]),
+//               new PlayableChunk([new Note("c.5"), 
+//                                  new Note("f.5"),
+//                                  new Note("a.5")]),
+//               new PlayableChunk([new Note("b.4"), 
+//                                  new Note("d.5"),
+//                                  new Note("g.5")]),
+//               new PlayableChunk([new Note("b.4"), 
+//                                  new Note("f.5"),
+//                                  new Note("g.5")]),
+//               new PlayableChunk([new Note("c.5"), 
+//                                  new Note("e.5"),
+//                                  new Note("g.5")])
+//              ];
 function drawGradient(colorScheme) {
   for (var i = 0; i <= height; i++) {
       var inter = map(i, 0, height, 0, 1);
@@ -426,21 +404,55 @@ var colorScheme5 = new ColorScheme('#eef5db', '#f7ce99',
 
 var currentAnim = anim1;
 var currentColorScheme = colorScheme1;
+
+function loadVocalTrack(filePath) {
+  noteStrings = loadStrings(filePath);
+}
+
+function preload() {
+  soundFormats('mp3', 'ogg');
+  mySound = loadSound('shape-of-you.mp3');
+  loadVocalTrack('shape-of-you.txt');
+}
+
 function setup() { 
+  for (var i = 0; i < noteStrings.length; i++) {
+    track[i] = new PlayableChunk([new Note(noteStrings[i])]);
+  }
+  trackIndex = 0;
   createCanvas(600, 400);
 } 
 
 function endFinishedOscillators() {
+  var toDelete = [];
   for (var i = 0; i < oscillators.length; i++) {
-    if (oscillators[i]["endTime"] < millis()) {
-      oscillators[i]["osc"].amp(0, 0.1);
-      oscillators[i]["osc"].stop();
-    }
+    if (oscillators[i]["key"] in heldKeys)
+      if (heldKeys[oscillators[i]["key"]] == false) {
+      	oscillators[i]["osc"].amp(0, 0.15);
+      	oscillators[i]["osc"]["stopTime"] = millis() + 200;
+    	}
+    	if (oscillators[i]["osc"]["stopTime"] < millis()) {
+        oscillators[i]["osc"].stop();
+        toDelete.push(i);
+      } 
+  }
+  for (var i = toDelete.length - 1; i >= 0; i--) {
+    oscillators.splice(toDelete[i], 1);
   }
 }
 
+function rightSidePressed() {
+  for (var i = 0; i < rightSideKeyboard.length; i++) {
+    if (rightSideKeyboard[i] in heldKeys &&
+        heldKeys[rightSideKeyboard[i]] == true) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function draw() {
-  if (rightSidePressed) {
+  if (rightSidePressed()) {
   	currentAnim.intenseAnim(currentColorScheme);
   } else {
     currentAnim.baseAnim(currentColorScheme);
@@ -450,41 +462,44 @@ function draw() {
 
 function keyPressed() {
   if (leftSideKeyboard.indexOf(key) >= 0) {
-    track2[trackIndex].play();
+    track[trackIndex].play(key);
     trackIndex += 1;
-    trackIndex %= track2.length;
+    trackIndex %= track.length;
   }
-  if (rightSideKeyboard.indexOf(key) >= 0) {
-    rightSidePressed = true;
-  }
-  if (key == 1) {
+  if (key == " ") {
+    playing = !playing;
+    if (playing) {
+      mySound.setVolume(0.4);
+      mySound.play();
+    } else {
+      mySound.pause();
+    }
+  } else if (keyCode == ENTER || keyCode == RETURN) {
+    mySound.stop();
+    if (playing) {
+      mySound.play();
+    }
+    trackIndex = 0;
+  } else if (key == 1) {
     currentAnim = anim1;
-  }
-  if (key == 2) {
+  } else if (key == 2) {
     currentAnim = anim2;
-  }
-  if (key == 3) {
+  } else if (key == 3) {
     currentAnim = anim3;
-  }
-  if (key == 6) {
+  } else if (key == 6) {
     currentColorScheme = colorScheme1;
-  }
-  if (key == 7) {
+  } else if (key == 7) {
     currentColorScheme = colorScheme2;
-  }
-  if (key == 8) {
+  } else if (key == 8) {
     currentColorScheme = colorScheme3;
-  }
-  if (key == 9) {
+  } else if (key == 9) {
     currentColorScheme = colorScheme4;
-  }
-  if (key == 0) {
+  } else if (key == 0) {
     currentColorScheme = colorScheme5;
   }
+  heldKeys[key] = true;
 }
 
 function keyReleased() {
-    if (rightSideKeyboard.indexOf(key) >= 0) {
-    rightSidePressed = false;
-  }
+  heldKeys[key] = false;
 }
