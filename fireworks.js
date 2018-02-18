@@ -3,6 +3,7 @@ var y = [];
 var xSpeed = [];
 var ySpeed = [];
 var colors = [];
+var pressed = false;
 
 function setup() {
   createCanvas(400, 400);
@@ -27,7 +28,10 @@ function draw() {
     y[index] = y[index] + ySpeed[index];
 	
   }
-
+  if (pressed) {
+  x[index] = x[index] + random(height);
+		y[index] = y[index] + random(width)
+  } 
   }
 	function keyPressed() {
   pressed = true;
@@ -35,5 +39,6 @@ function draw() {
 
 function keyReleased() {
 	pressed = false; 
+
 
 }
