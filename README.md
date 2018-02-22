@@ -2,7 +2,7 @@
 
 **Instructions for Playing the Virtual Musical Instrument:**
 * **How to Run** Copy the code from viz-instrument.js into [alpha.editor.p5js.org](alpha.editor.p5js.org), and upload the files shape-of-you.txt and shape-of-you.mp3 to the p5 sketch. Alternatively, go to [this sketch](http://alpha.editor.p5js.org/CJordanGoodman/sketches/Bk9zsBwwG)
-* **Keys 1-3:** Change the Design layout
+* **Keys 1-5:** Change the Design layout
 * **Keys 6-0:** Change the overall color scheme
 * **Left Half of Keyboard (Q,W,E,R,T,A,S,D,F,G,Z,X,C,V,B):** Plays the "vocals" of the song
 * **Right Half of Keyboard (Y,U,I,O,P,H,J,K,L,:,N,M,<,>):** Activates the animations
